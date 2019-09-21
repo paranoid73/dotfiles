@@ -1,0 +1,68 @@
+*.font: xft:Iosevka:style=Regular:size=14
+*.boldFont: xft:Iosevka:style=Bold:size=14
+*.italicFont: xft:Iosevka:style=Italic:size=14
+*.boldItalicFont: xft:Iosevka:style=Bold Italic:size=14
+
+URxvt*externalBorder: 10
+*.internalBorder:  40
+*.scrollBar: false
+*.scrollBar_right: false
+
+*.foreground: 	#9D9E95
+*.background:   #191F19
+
+! Black
+*color0:                              #252525
+*color8:                              #454545
+! Red
+*.color1:                             #c22832
+*.color9:                             #c22832
+! Green
+*.color2:                             #5b8662
+*.color10:                            #436b24
+! Yellow
+*.color3:                             #e0c64f
+*.color11:                            #e0c64f
+! Blue
+*.color4:                             #43a5d5
+*.color12:                            #43a5d5
+! Magenta
+*.color5:                             #8b57b5
+*.color13:                            #8b57b5
+! Cyan
+*.color6:                             #8ec43d
+*.color14:                            #8ec43d
+
+! White                               White !
+*color7:                              #C2C2A8
+*color15:                             #DBDAC1
+
+
+URxvt.keysym.S-Up: \033[1;2A
+URxvt.keysym.S-Down: \033[1;2B
+URxvt.keysym.S-Right: \033[1;2C
+URxvt.keysym.S-Left: \033[1;2D
+URxvt.keysym.S-Home: \033[1;2H
+URxvt.keysym.S-End: \033[1;2F
+URxvt.keysym.C-Up: \033[1;5A
+URxvt.keysym.C-Down: \033[1;5B
+URxvt.keysym.C-Right: \033[1;5C
+URxvt.keysym.C-Left: \033[1;5D
+URxvt.keysym.C-S-Up: \033[1;6A
+URxvt.keysym.C-S-Down: \033[1;6B
+URxvt.keysym.C-S-Right: \033[1;6C
+URXvt.keysym.C-S-Left: \033[1;6D
+
+! Copy Paste & Other Extensions
+URxvt.perl-ext-common: default,clipboard,url-select,keyboard-select
+URxvt.copyCommand: xclip -i -selection clipboard
+URxvt.pasteCommand: xclip -o -selection clipboard
+URxvt.keysym.M-c: perl:clipboard:copy
+URxvt.keysym.M-v: perl:clipboard:paste
+URxvt.keysym.M-C-v: perl:clipboard:paste_escaped
+URxvt.keysym.M-Escape: perl:keyboard-select:activate
+URxvt.keysym.M-s: perl:keyboard-select:search
+URxvt.keysym.M-u: perl:url-select:select_next
+URxvt.urlLauncher: firefox
+URxvt.underlineURLs: true
+URxvt.urlButton: 1

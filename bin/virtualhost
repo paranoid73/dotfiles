@@ -1,0 +1,141 @@
+#!/bin/bash
+### Set Language
+
+action=$1
+domain=$2
+rootDir=$3
+owner=$(whoami | awk '{print $1}')
+vhostlist='/etc/httpd/conf/extra/httpd-vhosts.conf'
+userDir='/srv/http/'
+sudo_user=${logname}
+
+if [ "$(whoami)" != 'root' ]; then
+	echo $"You have no permission to run $0 as non-root user. Use sudo"
+	exit 1;
+fi
+
+if [ "$action" != 'create' ] && [ "$action" != 'delete' ]
+	then
+		echo $"You need to prompt for action (create or delete) -- Lower-case only"
+		exit 1;
+fi
+
+while [ "$domain" == "" ]
+do
+	echo -e $"Please provide domain. e.g.dev,staging"
+	read domain
+done
+
+if [ "$rootDir" == "" ]; then
+	rootDir=$userDir$domain
+fi
+
+
+if [ "$action" == 'create' ] 
+then
+
+    ### check if domain already exists
+	if [ -e $rootDir ]; then
+		echo -e $"This domain already exists.\nPlease Try Another one"
+		exit 1;
+	fi
+
+    ### Add domain in /etc/hosts
+	if ! echo "127.0.0.1	 $domain" >> /etc/hosts
+	then
+		echo $"ERROR: Not able to write in /etc/hosts"
+		exit 1;
+	else
+		echo -e $"Host added to /etc/hosts file \n"
+	fi
+
+    
+
+    ### check if directory exists or not
+	if ! [ -d $rootDir ]; then
+		### create the directory
+		mkdir $rootDir
+		### give permission to root dir
+		chmod 755 $rootDir
+		### write test file in the new domain dir
+		if ! echo "<?php echo phpinfo(); ?>" > $rootDir/phpinfo.php
+		then
+			echo $"ERROR: Not able to write in file $rootDir/phpinfo.php. Please check permissions"
+			exit;
+		else
+			echo $"Added content to $rootDir/phpinfo.php"
+		fi
+	fi
+    
+    ### create virtual host rules file
+	if ! echo "
+		<VirtualHost *:80>
+			ServerAdmin webmaster@$domain
+			DocumentRoot "$rootDir"
+			ServerName $domain
+			ServerAlias www.$domain
+			<Directory />
+				AllowOverride All
+			</Directory>
+			<Directory $rootDir>
+				Options Indexes FollowSymLinks MultiViews
+				AllowOverride all
+				Require all granted
+			</Directory>
+			ErrorLog /var/log/httpd/$domain-error.log
+			LogLevel error
+			CustomLog /var/log/httpd/$domain-access.log combined
+		</VirtualHost>" >> $vhostlist
+	then
+		echo -e $"There is an ERROR creating $domain file"
+		exit;
+	else
+		echo -e $"\nNew Virtual Host Created\n"
+	fi
+
+    ### allow rights
+    if [ "$owner" == "" ]; then
+		iam=$(whoami)
+		if [ "$iam" == "root" ]; then
+			chown -R $sudo_user:$sudo_user $rootDir
+		else
+			chown -R $iam:$iam $rootDir
+		fi
+	else
+		chown -R $owner:$owner $rootDir
+	fi
+
+    # restart http server
+    systemctl restart httpd.service
+
+    ### show the finished message
+	echo -e $"Complete! \nYou now have a new Virtual Host \nYour new host is: http://$domain \nAnd its located at $rootDir"
+	exit;
+
+fi
+
+
+
+if [ "$action" == 'delete' ] 
+then
+
+	### check if directory exists or not
+	if [ -d $rootDir ]; then
+		echo -e $"Delete host root directory ? (y/n)"
+		read deldir
+
+		if [ "$deldir" == 'y' -o "$deldir" == 'Y' ]; then
+		### Delete the directory
+			rm -rf $rootDir
+			echo -e $"Directory deleted"
+		else
+			echo -e $"Host directory conserved"
+		fi
+	else
+		echo -e $"Host directory not found. Ignored"
+	fi
+
+	### show the finished message
+	echo -e $"Complete!\nYou just removed Virtual Host $domain"
+	exit 0;
+fi
